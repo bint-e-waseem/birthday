@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>birthday.cpp — a friendship, compiled</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The story behind a little C++ program written as a birthday gift, with a real terminal preview, source download, and instructions to run it yourself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,wght@0,500;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10111a;
+    --panel: #171927;
+    --panel-2: #1d1f30;
+    --border: #2b2e42;
+    --rose: #ef7d97;
+    --rose-soft: rgba(239,125,151,0.14);
+    --gold: #f0c14b;
+    --text: #ece9e2;
+    --muted: #8b90a8;
+    --green: #8fe3ab;
+    --serif: 'Fraunces', serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --head: 'Space Grotesk', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height:1.6;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(239,125,151,0.10), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(240,193,75,0.08), transparent 40%);
+    pointer-events:none;
+    z-index:0;
+  }
+  main, header, footer { position:relative; z-index:1; }
+
+  a{ color: var(--rose); }
+  .container{ max-width:1080px; margin:0 auto; padding: 0 24px; }
+
+  /* ---------- Skip link ---------- */
+  .skip-link{
+    position:absolute; left:-999px; top:auto;
+    background: var(--gold); color:#221a04; padding:10px 16px; border-radius:6px;
+    z-index:100; font-weight:600;
+  }
+  .skip-link:focus{ left:16px; top:16px; }
+
+  header.site{
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; }
+  .logo{
+    font-family: var(--mono); font-weight:600; color: var(--text);
+    font-size:1rem; text-decoration:none; display:flex; align-items:center; gap:8px;
+  }
+  .logo .dot{ width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block; }
+  nav.site-links{ display:flex; gap:22px; font-family:var(--mono); font-size:0.85rem; }
+  nav.site-links a{ color:var(--muted); text-decoration:none; }
+  nav.site-links a:hover, nav.site-links a:focus-visible{ color:var(--text); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 64px 0 40px;
+    display:grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family: var(--mono); color: var(--gold); font-size:0.8rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin:0 0 14px;
+  }
+  h1.hero-title{
+    font-family: var(--head);
+    font-size: clamp(2.1rem, 4.4vw, 3.3rem);
+    line-height:1.12;
+    margin: 0 0 18px;
+  }
+  h1.hero-title .accent{ color: var(--rose); }
+  .hero-sub{
+    color: var(--muted); font-size:1.05rem; max-width:46ch; margin:0 0 28px;
+  }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    font-family: var(--sans); font-weight:600; font-size:0.95rem;
+    padding: 12px 22px; border-radius:8px; border:1px solid transparent;
+    cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+    transition: transform .12s ease, background .15s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn-solid{ background: var(--rose); color:#2a0f16; }
+  .btn-solid:hover, .btn-solid:focus-visible{ background:#f292a7; }
+  .btn-outline{ background:transparent; border-color: var(--border); color: var(--text); }
+  .btn-outline:hover, .btn-outline:focus-visible{ border-color: var(--rose); color: var(--rose); }
+
+  /* ---------- Terminal ---------- */
+  .terminal-wrap{ position:relative; }
+  .terminal{
+    background: #0b0c13;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    overflow:hidden;
+  }
+  .terminal-bar{
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  .terminal-bar .tdot{ width:10px; height:10px; border-radius:50%; }
+  .tdot.red{ background:#ff5f57; } .tdot.yellow{ background:#febc2e; } .tdot.green{ background:#28c840; }
+  .terminal-bar .tlabel{
+    margin-left:auto; font-family: var(--mono); font-size:0.72rem; color:var(--muted);
+  }
+  .terminal-body{
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 16px;
+    height: 360px;
+    overflow-y:auto;
+    white-space:pre-wrap;
+    word-break:break-word;
+    color:#d7dae4;
+  }
+  .terminal-body .line-prompt{ color: var(--green); }
+  .terminal-body .line-heart{ color: var(--rose); }
+  .terminal-body .line-star{ color: var(--gold); }
+  .terminal-body::-webkit-scrollbar{ width:8px; }
+  .terminal-body::-webkit-scrollbar-thumb{ background: var(--border); border-radius:8px; }
+  .terminal-controls{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 10px 14px; background: var(--panel); border-top:1px solid var(--border);
+    font-family: var(--mono); font-size:0.72rem; color: var(--muted);
+  }
+  .terminal-controls button{
+    font-family: var(--mono); font-size:0.72rem; background:none; border:1px solid var(--border);
+    color: var(--text); padding:5px 10px; border-radius:6px; cursor:pointer;
+  }
+  .terminal-controls button:hover, .terminal-controls button:focus-visible{ border-color: var(--rose); color:var(--rose); }
+  .cursor{ display:inline-block; width:7px; height:1em; background:var(--text); vertical-align:text-bottom; animation: blink 1s step-end infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+  @media (prefers-reduced-motion: reduce){ .cursor{ animation:none; opacity:0.6; } }
+
+  /* ---------- Sections ---------- */
+  section{ padding: 56px 0; border-top: 1px solid var(--border); }
+  h2.section-title{
+    font-family: var(--head); font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 8px;
+  }
+  .section-kicker{
+    font-family: var(--mono); color:var(--muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.09em;
+    margin:0 0 10px;
+  }
+
+  .story p{ max-width: 70ch; color:#d3d0c8; }
+  blockquote.pull{
+    font-family: var(--serif); font-style:italic; font-size: clamp(1.2rem,2.4vw,1.55rem);
+    color: var(--text); border-left: 3px solid var(--rose); margin: 26px 0; padding: 4px 0 4px 22px;
+    max-width: 56ch;
+  }
+
+  .feature-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap:18px; margin-top:24px;
+  }
+  .feature-card{
+    background: var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px;
+  }
+  .feature-card h3{ font-family: var(--head); margin: 0 0 8px; font-size:1.05rem; }
+  .feature-card p{ color: var(--muted); font-size:0.92rem; margin:0 0 12px; }
+  .feature-card code.snippet{
+    display:block; font-family: var(--mono); font-size:0.76rem; background:#0b0c13;
+    border:1px solid var(--border); border-radius:6px; padding:10px 12px; color:#b9c4d8; overflow-x:auto;
+  }
+
+  .steps{ counter-reset: step; list-style:none; padding:0; margin: 26px 0 0; }
+  .steps li{
+    position:relative; padding-left:44px; margin-bottom:20px;
+  }
+  .steps li::before{
+    counter-increment: step; content: counter(step);
+    position:absolute; left:0; top:0;
+    width:30px; height:30px; border-radius:50%;
+    background: var(--rose-soft); border:1px solid var(--rose); color: var(--rose);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--mono); font-weight:600; font-size:0.85rem;
+  }
+  .code-row{
+    display:flex; align-items:center; gap:8px; background:#0b0c13; border:1px solid var(--border);
+    border-radius:8px; padding:10px 12px; font-family: var(--mono); font-size:0.82rem; margin-top:8px;
+    max-width: 560px; overflow-x:auto;
+  }
+  .code-row code{ flex:1; color:#b9c4d8; white-space:nowrap; }
+  .copy-btn{
+    background: var(--panel-2); border:1px solid var(--border); color: var(--text);
+    border-radius:6px; padding:5px 10px; font-family: var(--sans); font-size:0.75rem; cursor:pointer; flex-shrink:0;
+  }
+  .copy-btn:hover, .copy-btn:focus-visible{ border-color:var(--gold); color: var(--gold); }
+  .honest-note{
+    margin-top:26px; background: rgba(240,193,75,0.08); border:1px solid rgba(240,193,75,0.35);
+    border-radius:8px; padding:14px 16px; font-size:0.88rem; color:#e3d6ab; max-width:64ch;
+  }
+
+  /* ---------- Playground ---------- */
+  .playground{
+    text-align:center;
+  }
+  .heart-btn{
+    background:none; border:none; cursor:pointer; font-size:4rem; line-height:1;
+    filter: drop-shadow(0 6px 16px rgba(239,125,151,0.35));
+    transition: transform .15s ease;
+    padding: 10px;
+  }
+  .heart-btn:hover{ transform: scale(1.08); }
+  .heart-btn:active{ transform: scale(0.94); }
+  .loop-counter{
+    font-family: var(--mono); color: var(--muted); margin-top:8px;
+  }
+  .loop-counter strong{ color: var(--gold); }
+  .float-layer{
+    position:relative; height: 0; overflow:visible;
+  }
+  .floater{
+    position:absolute; left:50%; top:0; font-size:1.4rem; pointer-events:none;
+    animation: floatUp 1.6s ease-out forwards;
+  }
+  @keyframes floatUp{
+    0%{ transform: translate(-50%, 0) scale(0.8); opacity:1; }
+    100%{ transform: translate(calc(-50% + var(--dx, 0px)), -140px) scale(1.1); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .floater{ animation: none; opacity:0; }
+  }
+
+  footer.site{
+    border-top:1px solid var(--border); padding: 30px 0; text-align:center;
+    color: var(--muted); font-family: var(--mono); font-size:0.8rem;
+  }
+  footer.site a{ color: var(--muted); text-decoration: underline; }
+
+  a:focus-visible, button:focus-visible{ outline: 2px solid var(--gold); outline-offset:2px; }
+
+  @media (max-width: 860px){
+    .hero{ grid-template-columns: 1fr; padding-top:40px; }
+    .feature-grid{ grid-template-columns: 1fr; }
+    .terminal-body{ height: 300px; font-size:0.74rem; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site">
+  <div class="container nav-row">
+    <a class="logo" href="#top"><span class="dot" aria-hidden="true"></span>birthday.cpp</a>
+    <nav class="site-links" aria-label="Page sections">
+      <a href="#story">The story</a>
+      <a href="#features">What it does</a>
+      <a href="#run">Run it</a>
+      <a href="#play">Play</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="container" style="display:contents;">
+      <div>
+        <p class="eyebrow">A console program, written as a birthday gift</p>
+        <h1 class="hero-title">A friendship, <span class="accent">compiled</span>.</h1>
+        <p class="hero-sub">
+          <code style="font-family:var(--mono); font-size:0.9em;">birthday.cpp</code> is a small C++ program:
+          a login screen, a hand-built ASCII heart, and a password-locked box of memories — written
+          for one specific best friend, not for the general public. This page tells the story behind it,
+          shows a real recording of it running, and gives you everything to compile and run it yourself.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-solid" href="birthday.cpp" download>⬇ Download birthday.cpp</a>
+          <a class="btn btn-outline" href="#run">See how to run it</a>
+        </div>
+      </div>
+
+      <div class="terminal-wrap">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="tdot red" aria-hidden="true"></span>
+            <span class="tdot yellow" aria-hidden="true"></span>
+            <span class="tdot green" aria-hidden="true"></span>
+            <span class="tlabel">bash — ./birthday</span>
+          </div>
+          <div class="terminal-body" id="terminal-body" role="log" aria-live="off" tabindex="0" aria-label="Recorded terminal output of birthday.cpp running">
+          </div>
+          <div class="terminal-controls">
+            <span id="terminal-status">This is a real recording of the program's actual output.</span>
+            <div style="display:flex; gap:8px;">
+              <button type="button" id="replay-btn">↺ Replay</button>
+              <button type="button" id="skip-btn">Skip to end</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="story">
+    <div class="container story">
+      <p class="section-kicker">Why this exists</p>
+      <h2 class="section-title">The story behind the code</h2>
+      <p>
+        This program didn't start as a portfolio piece. It started as an inside joke that got out of hand:
+        instead of a card, why not a login screen only she could get past? Instead of a paragraph, why not
+        a class called <code style="font-family:var(--mono);">Friendship</code> that never really returns?
+      </p>
+      <p>
+        Every function in <code style="font-family:var(--mono);">birthday.cpp</code> maps to something real —
+        the six years, the ASCII heart drawn character by character, the "infinite" loop that's secretly
+        capped at five iterations because real programs have to end even when feelings don't, and a memory box
+        that only opens for someone who already knows the password without being told.
+      </p>
+      <blockquote class="pull">
+        "You are the poetry I never knew I could write, the melody that always plays in the background of my life."
+      </blockquote>
+      <p>
+        That line lives inside a <code style="font-family:var(--mono);">cout</code> statement in the middle of the
+        source file — which is, honestly, the whole point of building it this way.
+      </p>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <p class="section-kicker">Under the hood</p>
+      <h2 class="section-title">What the program actually does</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>🔐 Bestie login screen</h3>
+          <p>Checks a username and password before anything else runs — a small gate that makes the rest feel earned rather than just printed to a terminal.</p>
+          <code class="snippet">if (username == "BFF" && password == "MY GIRL") { ... }</code>
+        </div>
+        <div class="feature-card">
+          <h3>💛 The Friendship class</h3>
+          <p>Bundles a name and years-together into an object, then prints the heartfelt opening message and a five-loop "infinite" friendship counter.</p>
+          <code class="snippet">class Friendship {
+  string bestieName;
+  int yearsTogether;
+  void showImportance();
+};</code>
+        </div>
+        <div class="feature-card">
+          <h3>❤️ Hand-drawn ASCII heart</h3>
+          <p>No image files, no libraries — just nested loops printing spaces and asterisks until a heart shape falls out of the math.</p>
+          <code class="snippet">for (int j = 0; j < 2*i+1; j++)
+  cout << "*";</code>
+        </div>
+        <div class="feature-card">
+          <h3>📦 Password-protected memory box</h3>
+          <p>A second, smaller password gate that unlocks a short list of shared memories — a private easter egg inside the bigger one.</p>
+          <code class="snippet">class MemoryBox {
+  string accessPassword;
+  bool unlock();
+};</code>
+        </div>
+      </div>
+      <div class="honest-note">
+        <strong>Worth knowing:</strong> this is a simple learning-project style console program, not a security
+        tool. The username and password are stored as plain text in the source, and a real terminal will show
+        the password on screen as it's typed (there's no input-masking in standard C++ console input). That's a
+        fine tradeoff for a lighthearted birthday surprise between two people — just don't reuse "MY GIRL" as an
+        actual password anywhere that matters, and don't take the pattern into a project that guards something real.
+      </div>
+    </div>
+  </section>
+
+  <section id="run">
+    <div class="container">
+      <p class="section-kicker">Try it yourself</p>
+      <h2 class="section-title">Compile and run it locally</h2>
+      <p style="color:var(--muted); max-width:60ch;">
+        You'll need a C++ compiler (like <code style="font-family:var(--mono);">g++</code>), available by default
+        on most Linux and Mac systems, or installable via <a href="https://www.mingw-w64.org/" target="_blank" rel="noopener">MinGW</a>
+        on Windows.
+      </p>
+      <ol class="steps">
+        <li>
+          <strong>Download the source file.</strong>
+          <div><a class="btn btn-outline" style="margin-top:10px;" href="birthday.cpp" download>⬇ birthday.cpp</a></div>
+        </li>
+        <li>
+          <strong>Compile it.</strong>
+          <div class="code-row">
+            <code id="cmd-compile">g++ -std=c++17 -O2 -o birthday birthday.cpp</code>
+            <button class="copy-btn" data-target="cmd-compile" type="button">Copy</button>
+          </div>
+        </li>
+        <li>
+          <strong>Run it.</strong>
+          <div class="code-row">
+            <code id="cmd-run">./birthday</code>
+            <button class="copy-btn" data-target="cmd-run" type="button">Copy</button>
+          </div>
+          <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">On Windows, run <code style="font-family:var(--mono);">birthday.exe</code> instead.</p>
+        </li>
+        <li>
+          <strong>Log in.</strong>
+          <p style="color:var(--muted); font-size:0.9rem; margin-top:4px;">
+            Username <code style="font-family:var(--mono);">BFF</code>, password <code style="font-family:var(--mono);">MY GIRL</code> —
+            or open the file and swap in your own names and message. It's plain-text C++; that's the whole appeal.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="play" class="playground">
+    <div class="container">
+      <p class="section-kicker">A tiny interactive extra</p>
+      <h2 class="section-title">The loop, made clickable</h2>
+      <p style="color:var(--muted); max-width:50ch; margin: 0 auto 6px;">
+        The real program loops five times and stops. This one doesn't have to.
+      </p>
+      <div class="float-layer" id="float-layer"></div>
+      <button class="heart-btn" id="heart-btn" aria-label="Tap to send another loop of love, increasing the counter below">❤️</button>
+      <p class="loop-counter" aria-live="polite" id="loop-counter">Loops of love: <strong>0</strong></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="container">
+    Built to explain <code style="font-family:var(--mono);">birthday.cpp</code>, not to replace it. Source included above.
+  </div>
+</footer>
+
+<script>
+/* ---------------- Terminal replay ---------------- */
+const RAW_TRANSCRIPT = `----------------------------------------------
+           BESTIE LOGIN SCREEN
+----------------------------------------------
+
+Enter Username: Enter Password:
+[CHECK] Login Successful! Welcome, my forever soul sister! [STAR]
+
+[HEART] My Dearest Bestie [HEART]
+You are not just my best friend, you are the most important person in my life.
+The one who makes every ordinary day feel like magic.
+The one my heart always chooses, in every lifetime.
+
+[HEART] A HEART FULL OF LOVE FOR YOU [HEART]
+
+      *             *
+     ***           ***
+    *****         *****
+   *******       *******
+  *********     *********
+ ***********   ***********
+***********************
+ *********************
+  *******************
+   *****************
+    ***************
+     *************
+      ***********
+       *********
+        *******
+         *****
+          ***
+           *
+
+[HEART] My Dearest, My Forever [HEART]
+
+Six years. Can you believe it? It feels like just yesterday we were two nervous girls,
+trying to find our footing in a world that felt so big and scary. And now, here we are.
+You've seen me at my absolute worst, the messy-haired, tear-streaked, sobbing-on-the-floor
+version of me, and you've been there for my best, the laughter-so-hard-I-can't-breathe version too.
+You are the anchor to my ship, the calm to my chaos, and the home my heart always runs back to.
+
+You make even the ordinary moments feel extraordinary. You are the poetry I never knew I could write,
+the melody that always plays in the background of my life.
+
+Thank you. From the very bottom of my heart, thank you for being my rock, my confidante,
+my partner-in-crime...
+
+Here's to us. Here's to the memories we've made and the millions we have yet to create.
+This isn't just a friendship for this life... Our souls are forever intertwined.
+
+Forever yours, and yours alone,
+Your Bestie. [HEART]
+
+[STAR] Starting our Infinite Friendship Loop [STAR]
+This loop represents our bond, endless, unbreakable, and full of love.
+
+Loop 1: Our friendship grows stronger... forever [HEART]
+Loop 2: Our friendship grows stronger... forever [HEART]
+Loop 3: Our friendship grows stronger... forever [HEART]
+Loop 4: Our friendship grows stronger... forever [HEART]
+Loop 5: Our friendship grows stronger... forever [HEART]
+
+... and it continues infinitely, just like us. [STAR]
+
+[LOCK] PASSWORD PROTECTED MEMORY BOX [LOCK]
+Enter the secret password to open our treasure chest of memories: [CHECK] Access Granted!
+
+DO U REMEMBER OUR FIRST FIGHT
+- We survived 2 whole years of college without a single continuous chat.
+- 3 AM talks about everything and nothing.
+- All the silly selfies and inside jokes.
+- The promises we made to always be there.
+- And millions more moments that made us US.
+
+These memories are locked in my heart forever. [HEART]
+
+[STAR] Thank you for being YOU. The world is brighter because you're in it. [STAR]
+
+Program ended with endless love. [HEART]`;
+
+const LINES = RAW_TRANSCRIPT.split("\n");
+const body = document.getElementById('terminal-body');
+const statusEl = document.getElementById('terminal-status');
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function styledLine(line){
+  const span = document.createElement('span');
+  span.textContent = line;
+  if(line.includes('[HEART]')) span.className = 'line-heart';
+  else if(line.includes('[STAR]') || line.includes('[CHECK]')) span.className = 'line-star';
+  else if(line.startsWith('Enter ')) span.className = 'line-prompt';
+  return span;
+}
+
+let playTimer = null;
+
+function renderAll(instant){
+  clearTimeout(playTimer);
+  body.innerHTML = "";
+  LINES.forEach(line=>{
+    body.appendChild(styledLine(line));
+    body.appendChild(document.createTextNode("\n"));
+  });
+  body.scrollTop = body.scrollHeight;
+  statusEl.textContent = "This is a real recording of the program's actual output. (showing full transcript)";
+}
+
+function playTyping(){
+  clearTimeout(playTimer);
+  body.innerHTML = "";
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  body.appendChild(cursor);
+  let i = 0;
+  statusEl.textContent = "Replaying the recorded run…";
+  function step(){
+    if(i >= LINES.length){
+      cursor.remove();
+      statusEl.textContent = "This is a real recording of the program's actual output.";
+      return;
+    }
+    const line = LINES[i];
+    cursor.before(styledLine(line));
+    cursor.before(document.createTextNode("\n"));
+    body.scrollTop = body.scrollHeight;
+    i++;
+    const delay = Math.min(90, 26 + line.length * 1.1);
+    playTimer = setTimeout(step, delay);
+  }
+  step();
+}
+
+if(prefersReduced){
+  renderAll(true);
+  statusEl.textContent = "This is a real recording of the program's actual output.";
+} else {
+  playTyping();
+}
+
+document.getElementById('replay-btn').addEventListener('click', ()=>{
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    renderAll(true);
+  } else {
+    playTyping();
+  }
+});
+document.getElementById('skip-btn').addEventListener('click', ()=> renderAll(true));
+
+/* ---------------- Copy buttons ---------------- */
+document.querySelectorAll('.copy-btn').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const targetId = btn.getAttribute('data-target');
+    const text = document.getElementById(targetId).textContent;
+    try{
+      await navigator.clipboard.writeText(text);
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(()=> btn.textContent = original, 1400);
+    } catch(e){
+      btn.textContent = "Press Ctrl/Cmd+C";
+    }
+  });
+});
+
+/* ---------------- Mini interactive heart ---------------- */
+let loopCount = 0;
+const counterEl = document.getElementById('loop-counter');
+const floatLayer = document.getElementById('float-layer');
+const heartBtn = document.getElementById('heart-btn');
+const reduceMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+heartBtn.addEventListener('click', ()=>{
+  loopCount++;
+  counterEl.innerHTML = `Loops of love: <strong>${loopCount}</strong>`;
+  if(!reduceMotionMQ.matches){
+    const f = document.createElement('span');
+    f.className = 'floater';
+    f.textContent = '💗';
+    f.style.setProperty('--dx', (Math.random()*80 - 40) + 'px');
+    floatLayer.appendChild(f);
+    setTimeout(()=> f.remove(), 1700);
+  }
+});
+</script>
+</body>
+</html>
