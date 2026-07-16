@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For My Forever Bestie</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cork: #b98a5e;
+    --cork-dark: #93693e;
+    --plum: #402330;
+    --plum-deep: #2c1620;
+    --rose: #d98a9d;
+    --rose-deep: #b5607a;
+    --gold: #d4af37;
+    --paper: #f6ecd9;
+    --paper-shadow: rgba(44,22,32,0.35);
+    --ink: #3a2430;
+    --tape: rgba(216, 197, 158, 0.85);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; min-height:100vh;
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.05), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 6px),
+      var(--cork);
+    background-blend-mode: multiply, normal;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1.5px);
+    background-size: 14px 14px;
+    opacity:0.5;
+    pointer-events:none;
+  }
+  .stage{
+    display:none;
+    min-height:100vh;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    padding:30px 16px 60px;
+  }
+  .stage.active{ display:flex; animation: fadeIn .6s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  h1,h2,h3, .script{
+    font-family:'Caveat', cursive;
+  }
+  .board{
+    background: var(--paper);
+    border-radius: 6px;
+    box-shadow: 0 18px 40px var(--paper-shadow), 0 2px 0 rgba(255,255,255,0.4) inset;
+    padding: 34px 30px;
+    max-width: 620px;
+    width:100%;
+    position:relative;
+    transform: rotate(-0.6deg);
+  }
+  .board.wide{ max-width: 780px; }
+  .washi{
+    position:absolute;
+    width:120px; height:34px;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+    opacity:0.75;
+    top:-16px; left:50%;
+    transform: translateX(-50%) rotate(-3deg);
+    border-radius:2px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.25);
+  }
+  .pin{
+    position:absolute; top:-10px; right:24px;
+    width:16px;height:16px;border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #ff8a8a, #b52d3a);
+    box-shadow:0 3px 5px rgba(0,0,0,0.4);
+  }
+  .title-main{
+    font-size: 3rem;
+    text-align:center;
+    color: var(--rose-deep);
+    margin: 4px 0 2px;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.4);
+  }
+  .subtitle{
+    text-align:center;
+    font-style:italic;
+    color: var(--ink);
+    opacity:0.75;
+    margin-bottom:20px;
+    font-size:0.95rem;
+  }
+
+  /* --- Field / buffer display --- */
+  .field-group{ margin-bottom: 18px; }
+  .field-label{
+    font-weight:700;
+    font-size:0.85rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--rose-deep);
+    margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+    cursor:pointer;
+  }
+  .field-label .dot{
+    width:10px;height:10px;border-radius:50%;
+    background: #ccc; display:inline-block;
+    transition: background .2s;
+  }
+  .field-label.selected .dot{ background: var(--gold); box-shadow:0 0 6px var(--gold);}
+  .buffer{
+    display:flex; flex-wrap:wrap; gap:6px;
+    min-height:48px;
+    background: rgba(0,0,0,0.05);
+    border: 2px dashed rgba(0,0,0,0.15);
+    border-radius:8px;
+    padding:8px 10px;
+    align-items:center;
+  }
+  .buffer.selected{ border-color: var(--rose-deep); background: rgba(217,138,157,0.12); }
+  .tile-in-buffer{
+    background: var(--paper);
+    border:1px solid rgba(0,0,0,0.2);
+    border-radius:6px;
+    width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+    box-shadow: 1px 2px 2px rgba(0,0,0,0.15);
+    font-family:'Kalam',cursive;
+  }
+  .buffer-empty-hint{ opacity:0.4; font-style:italic; font-size:0.9rem; }
+
+  /* --- Keyboard --- */
+  .keyboard{
+    display:grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap:6px;
+    margin: 16px 0;
+  }
+  .key{
+    background: linear-gradient(160deg, #fffdf6, #e8dcc0);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius:6px;
+    padding: 10px 0;
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+    transition: transform .08s, box-shadow .08s;
+    user-select:none;
+  }
+  .key:hover{ background: linear-gradient(160deg, #fff, var(--rose)); }
+  .key:active{ transform: translateY(2px); box-shadow:none; }
+  .key.wide{ grid-column: span 3; }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px;}
+  .btn{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:1.05rem;
+    padding: 12px 26px;
+    border-radius: 30px;
+    border:none;
+    cursor:pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn:active{ transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.25); }
+  .btn-primary{ background: linear-gradient(135deg, var(--rose), var(--rose-deep)); color:#fff; }
+  .btn-ghost{ background: transparent; border: 2px solid var(--ink); color:var(--ink); opacity:0.7;}
+  .btn-gold{ background: linear-gradient(135deg, var(--gold), #b5892a); color:#3a2b06;}
+
+  .msg{
+    text-align:center;
+    margin-top: 14px;
+    min-height: 24px;
+    font-weight:700;
+  }
+  .msg.err{ color:#a5273a; }
+  .msg.ok{ color:#2e7d4f; }
+
+  /* --- Heart --- */
+  .heart-wrap{ display:flex; justify-content:center; margin: 10px 0 6px;}
+  .heart{
+    width:140px;height:126px;position:relative;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .heart::before, .heart::after{
+    content:"";
+    position:absolute; top:0; width:72px;height:112px;
+    background: var(--rose-deep);
+    border-radius: 50px 50px 0 0;
+  }
+  .heart::before{ left:70px; transform: rotate(-45deg); transform-origin: 0 100%; }
+  .heart::after{ left:0; transform: rotate(45deg); transform-origin: 100% 100%; }
+  @keyframes pulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.08);} }
+
+  .loop-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin: 16px 0;}
+  .loop-card{
+    background:#fff; border:6px solid #fff; box-shadow:0 6px 14px rgba(0,0,0,0.3);
+    width:76px; padding-bottom:6px; text-align:center; transform: rotate(0deg);
+    opacity:0; transform:translateY(10px) rotate(-4deg);
+    transition: all .5s ease;
+    font-family:'Kalam',cursive;
+    font-size:0.75rem;
+  }
+  .loop-card.show{ opacity:1; transform:translateY(0) rotate(-4deg); }
+  .loop-card .stamp{
+    height:56px; display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem;
+  }
+
+  .letter-text p{
+    font-family:'Kalam', cursive;
+    font-size:1.08rem;
+    line-height:1.65;
+    margin: 0 0 14px;
+  }
+  .signature{
+    text-align:right;
+    font-family:'Caveat', cursive;
+    font-size:1.8rem;
+    color: var(--rose-deep);
+  }
+
+  .memories-list{ list-style:none; padding:0; margin:16px 0;}
+  .memories-list li{
+    background: rgba(217,138,157,0.12);
+    border-left: 4px solid var(--rose-deep);
+    padding:10px 14px;
+    margin-bottom:8px;
+    border-radius: 0 8px 8px 0;
+    font-family:'Kalam',cursive;
+  }
+
+  .footer-note{
+    text-align:center; margin-top:26px; opacity:0.85; font-family:'Caveat',cursive; font-size:1.4rem; color:var(--paper);
+  }
+  .top-tabs{ display:flex; justify-content:center; gap:8px; margin-bottom:10px;}
+  .top-tabs button{
+    font-family:'Kalam',cursive;
+    border:none; padding:6px 14px; border-radius:20px; cursor:pointer;
+    background: rgba(0,0,0,0.08);
+    font-size:0.8rem;
+  }
+  .top-tabs button.on{ background: var(--rose-deep); color:#fff; }
+
+  @media (max-width:480px){
+    .keyboard{ grid-template-columns: repeat(6,1fr); }
+    .title-main{ font-size:2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- STAGE 1: LOGIN -->
+<div class="stage active" id="stage-login">
+  <div class="board">
+    <div class="washi"></div>
+    <div class="pin"></div>
+    <h1 class="title-main">🔒 Bestie Login 🔒</h1>
+    <p class="subtitle">Tap the tiles below — no typing allowed. Only my true BFF knows the way in.</p>
+
+    <div class="field-group">
+      <div class="field-label selected" id="label-user" onclick="selectField('user')">
+        <span class="dot"></span> Username
+      </div>
+      <div class="buffer selected" id="buffer-user"><span class="buffer-empty-hint">tap letters below…</span></div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label" id="label-pass" onclick="selectField('pass')">
+        <span class="dot"></span> Password
+      </div>
+      <div class="buffer" id="buffer-pass"><span class="buffer-empty-hint">tap letters below…</span></div>
+    </div>
+
+    <div class="keyboard" id="keyboard-login"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="backspace('login')">⌫ Backspace</button>
+      <button class="btn btn-ghost" onclick="clearField('login')">Clear field</button>
+      <button class="btn btn-primary" onclick="tryLogin()">Unlock 💕</button>
+    </div>
+    <div class="msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- STAGE 2: WELCOME + HEART + LOOP -->
+<div class="stage" id="stage-welcome">
+  <div class="board">
+    <div class="washi"></div>
+    <h1 class="title-main">Welcome, my forever soul sister! 💖</h1>
+
+    <div class="heart-wrap"><div class="heart"></div></div>
+
+    <h3 style="text-align:center; color:var(--rose-deep);">My Dearest Bestie</h3>
+    <p style="text-align:center; font-family:'Kalam',cursive;">
+      You are not just my best friend — you are the most important person in my life.<br>
+      The one who makes every ordinary day feel like magic.<br>
+      The one my heart always chooses, in every lifetime.
+    </p>
+
+    <h3 style="text-align:center; color:var(--rose-deep); margin-top:20px;">Our Infinite Friendship Loop</h3>
+    <p style="text-align:center; font-size:0.9rem; opacity:0.8;">Tap to watch six years unfold, one card at a time.</p>
+    <div class="loop-row" id="loop-row"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-gold" id="loop-btn" onclick="runLoop()">Play the loop ▶</button>
+      <button class="btn btn-primary" id="to-letter-btn" style="display:none" onclick="goStage('stage-letter')">Read my letter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 3: LETTER -->
+<div class="stage" id="stage-letter">
+  <div class="board wide">
+    <div class="washi"></div>
+    <div class="pin"></div>
+    <h1 class="title-main" style="font-size:2.4rem;">My Dearest, My Forever</h1>
+    <div class="letter-text">
+      <p>Six years. Can you believe it? It feels like just yesterday we were two nervous girls, trying to find our footing in a world that felt so big and scary. And now, here we are.</p>
+      <p>You've seen me at my absolute worst — the messy-haired, tear-streaked, sobbing-on-the-floor version of me — and you've been there for my best, the jumping-up-and-down, laughter-so-hard-I-can't-breathe version, too. You've held my hand through every storm and danced with me in every ray of sunshine. You are the anchor to my ship, the calm to my chaos, and the home my heart always runs back to.</p>
+      <p>Sometimes I lie awake and think about how the universe must have woven our stars together, placing them just right so our paths would cross that fateful day. It feels like something out of one of those novels we love... In a world of seven billion people, I found my person in you. And to me, that is the most magical kind of miracle.</p>
+      <p>You make even the ordinary moments feel extraordinary. You are the poetry I never knew I could write, the melody that always plays in the background of my life. You are the softest light that guides me through the darkness. 🌙✨</p>
+      <p>Thank you. From the very bottom of my heart, thank you for being my rock, my confidante, my partner-in-crime...</p>
+      <p>As we step into this next chapter of our lives, remember one thing: you are a force of nature. You are brilliant, beautiful, and capable of absolutely anything. My biggest wish for you is a life bursting with happiness.</p>
+      <p>Here's to us. Here's to the memories we've made and the millions we have yet to create. Our souls are forever intertwined. I'll be looking for you in Jannah too. 🤍🕊️</p>
+    </div>
+    <p class="signature">Forever yours, and yours alone — Your Bestie 💌</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStage('stage-box')">Open the Memory Box →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 4: MEMORY BOX -->
+<div class="stage" id="stage-box">
+  <div class="board" id="box-locked-board">
+    <div class="washi"></div>
+    <div class="pin"></div>
+    <h1 class="title-main">📦 The Memory Box 📦</h1>
+    <p class="subtitle">Enter the secret password to open our treasure chest of memories.</p>
+
+    <div class="field-group">
+      <div class="buffer selected" id="buffer-box"><span class="buffer-empty-hint">tap letters below…</span></div>
+    </div>
+
+    <div class="keyboard" id="keyboard-box"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="backspace('box')">⌫ Backspace</button>
+      <button class="btn btn-ghost" onclick="clearField('box')">Clear</button>
+      <button class="btn btn-primary" onclick="tryBox()">Open Box 🔓</button>
+    </div>
+    <div class="msg" id="box-msg"></div>
+  </div>
+
+  <div class="board wide" id="box-open-board" style="display:none;">
+    <div class="washi"></div>
+    <h2 style="text-align:center; color:var(--rose-deep);">✅ Access Granted — Welcome to our sacred memories</h2>
+    <ul class="memories-list">
+      <li>Do you remember our very first fight — and how we survived it?</li>
+      <li>We survived 2 whole years of college without a single continuous chat, and still came back stronger.</li>
+      <li>3 AM talks about everything and nothing.</li>
+      <li>All the silly selfies and inside jokes only we understand.</li>
+      <li>The promises we made to always be there.</li>
+      <li>And millions more moments that made us <em>US</em>.</li>
+    </ul>
+    <p style="text-align:center; font-family:'Caveat',cursive; font-size:1.6rem; color:var(--rose-deep);">These memories are locked in my heart forever. 💞</p>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="goStage('stage-end')">Finish →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 5: END -->
+<div class="stage" id="stage-end">
+  <div class="board" style="text-align:center;">
+    <div class="washi"></div>
+    <h1 class="title-main">Thank you for being YOU 💫</h1>
+    <p style="font-family:'Kalam',cursive; font-size:1.1rem;">The world is brighter because you're in it.</p>
+    <p class="script" style="font-size:1.6rem; color:var(--rose-deep);">Program ended with endless love. 💕</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="location.reload()">Play again ↺</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">made with 💗 for my forever bestie</div>
+
+<script>
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+function buildKeyboard(containerId, onKey){
+  const el = document.getElementById(containerId);
+  LETTERS.forEach(ch=>{
+    const b = document.createElement('button');
+    b.className='key';
+    b.textContent = ch;
+    b.onclick = ()=> onKey(ch);
+    el.appendChild(b);
+  });
+  const space = document.createElement('button');
+  space.className='key wide';
+  space.textContent = 'SPACE';
+  space.onclick = ()=> onKey(' ');
+  el.appendChild(space);
+}
+
+/* ---------- LOGIN STAGE ---------- */
+let loginField = 'user';
+let loginBuffers = { user: "", pass: "" };
+
+function selectField(f){
+  loginField = f;
+  document.getElementById('label-user').classList.toggle('selected', f==='user');
+  document.getElementById('label-pass').classList.toggle('selected', f==='pass');
+  document.getElementById('buffer-user').classList.toggle('selected', f==='user');
+  document.getElementById('buffer-pass').classList.toggle('selected', f==='pass');
+}
+
+function renderBuffer(id, value){
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+  if(value.length===0){
+    el.innerHTML = '<span class="buffer-empty-hint">tap letters below…</span>';
+    return;
+  }
+  for(const ch of value){
+    const t = document.createElement('span');
+    t.className = 'tile-in-buffer';
+    t.textContent = ch===' ' ? '␣' : ch;
+    el.appendChild(t);
+  }
+}
+
+buildKeyboard('keyboard-login', (ch)=>{
+  loginBuffers[loginField] += ch;
+  renderBuffer('buffer-'+loginField, loginBuffers[loginField]);
+});
+
+function backspace(which){
+  if(which==='login'){
+    loginBuffers[loginField] = loginBuffers[loginField].slice(0,-1);
+    renderBuffer('buffer-'+loginField, loginBuffers[loginField]);
+  } else {
+    boxBuffer = boxBuffer.slice(0,-1);
+    renderBuffer('buffer-box', boxBuffer);
+  }
+}
+function clearField(which){
+  if(which==='login'){
+    loginBuffers[loginField] = "";
+    renderBuffer('buffer-'+loginField, "");
+  } else {
+    boxBuffer = "";
+    renderBuffer('buffer-box', "");
+  }
+}
+
+function tryLogin(){
+  const msg = document.getElementById('login-msg');
+  if(loginBuffers.user === "BFF" && loginBuffers.pass === "MY GIRL"){
+    msg.className = 'msg ok';
+    msg.textContent = "✔ Login Successful! Welcome, my forever soul sister!";
+    setTimeout(()=> goStage('stage-welcome'), 700);
+  } else {
+    msg.className = 'msg err';
+    msg.textContent = "✘ Access Denied. Only my true BFF knows the way in. Try again with love!";
+  }
+}
+
+/* ---------- STAGE SWITCHING ---------- */
+function goStage(id){
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- FRIENDSHIP LOOP ---------- */
+const loopMoments = ["Yr 1 🌱","Yr 2 📚","Yr 3 🎓","Yr 4 🌟","Yr 5 🤝","Forever ♾️"];
+function runLoop(){
+  const row = document.getElementById('loop-row');
+  row.innerHTML = "";
+  document.getElementById('loop-btn').disabled = true;
+  loopMoments.forEach((label, i)=>{
+    const card = document.createElement('div');
+    card.className = 'loop-card';
+    card.innerHTML = `<div class="stamp">${label.split(' ').pop()}</div><div>${label.split(' ').slice(0,-1).join(' ')}</div>`;
+    row.appendChild(card);
+    setTimeout(()=> card.classList.add('show'), i*400);
+  });
+  setTimeout(()=>{
+    document.getElementById('to-letter-btn').style.display = 'inline-block';
+  }, loopMoments.length*400 + 300);
+}
+
+/* ---------- MEMORY BOX STAGE ---------- */
+let boxBuffer = "";
+buildKeyboard('keyboard-box', (ch)=>{
+  boxBuffer += ch;
+  renderBuffer('buffer-box', boxBuffer);
+});
+
+function tryBox(){
+  const msg = document.getElementById('box-msg');
+  if(boxBuffer === "MY GIRL"){
+    msg.className='msg ok';
+    msg.textContent = "✔ Access Granted!";
+    setTimeout(()=>{
+      document.getElementById('box-locked-board').style.display='none';
+      document.getElementById('box-open-board').style.display='block';
+    }, 500);
+  } else {
+    msg.className='msg err';
+    msg.textContent = "✘ Wrong password. Only my forever bestie knows this. 💔";
+  }
+}
+</script>
+</body>
+</html>
